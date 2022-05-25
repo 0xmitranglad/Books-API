@@ -5,17 +5,6 @@ const bodyParser = require('body-parser');
 const _ = require('underscore'); 
 const db = require('./db.js');
 
-let books = [];
-let nextId = 1;
-
-// {
-//     "name": "Game of thrones",
-//     "author": "George Martin",
-//     "language": "English",
-//     "publisher": "Voyager Books",
-//     "edition": "Dance of Dragons",
-//     "publishYear": "2011"
-// }
 
 app.use(bodyParser.json());
 
@@ -116,7 +105,7 @@ app.delete('/books/:id', (req, res) => {
         where: {id: bookId}
     }).then( (delBook) => {
         if(delBook === 0) {
-            res.status(404).json({ err: 'Book not found' });
+            res.status(404).json({err: 'Book not found'});
         } else {
             res.status(204).send();
         }
