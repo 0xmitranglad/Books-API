@@ -1,19 +1,13 @@
 const Sequelize = require('sequelize');
-const sequelize = new Sequelize(undefined, undefined, undefined, {
-    dialect: 'sqlite',
-    storage: `${__dirname}/data/database.sqlite`
+var sequelize = new Sequelize(undefined, undefined, undefined, {
+    'dialect': 'sqlite',
+    'storage': `${__dirname}/data/database.sqlite`
 });
 
-//Models
-// var Table = sequelize.define('Table', {
-//     column1: {
-//         type: Sequelize.STRING
-//     },
-//     column2: {
-//         type: Sequelize.STRING
-//     }
-// });
+var db = {};
 
-sequelize.sync().then(function () {
-    console.log('Everything Synced');
-});
+db.book = sequelize.import(`${__dirname}/models/book.js`);
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+
+module.exports = db;
