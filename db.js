@@ -7,6 +7,7 @@ var sequelize = new Sequelize(undefined, undefined, undefined, {
 var db = {};
 
 db.book = sequelize.import(`${__dirname}/models/book.js`);
+db.author = sequelize.import(`${__dirname}/models/author.js`);
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 

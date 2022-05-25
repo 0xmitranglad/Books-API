@@ -2,13 +2,13 @@ const express = require('express');
 const app = express();
 const PORT = 3000;
 const bodyParser = require('body-parser');
-const _ = require('underscore'); 
+const _ = require('underscore');
 const db = require('./db.js');
 
 
 app.use(bodyParser.json());
 
-//Create books
+//Create books 
 app.post('/books', (req, res) => {
 
     let body = _.pick(
@@ -23,7 +23,6 @@ app.post('/books', (req, res) => {
 
     db.book.create(body)
         .then((book) => {
-            console.log(`promise obj after successful table creation: ${body}`);
             res.json(book.toJSON());
         }, (err) => {
             res.status(400).send();
@@ -115,8 +114,36 @@ app.delete('/books/:id', (req, res) => {
 });
 
 
+
+//Authors 
+app.post('/authors', (req, res) => {
+    let body = _.pick(
+        req.body,
+        'firstName',
+        'lastName',
+        'username',
+        'email',
+        'password',
+        'city',
+        'country'
+    );
+
+    db.author.create(body)
+        .then((author) => {
+            res.json(author.toJSON());
+        }, (err) => {
+            res.status(400).send();
+        });
+});
+
+
+
+
+
+
+
 //Getting Live
-db.sequelize.sync().then(() => {
+db.sequelize.sync({force: true}).then(() => {
     app.listen(PORT, (req, res) => {
         console.log(`Listening on port: ${PORT}!`);
     });
