@@ -43,7 +43,21 @@ app.post('/books', (req, res) => {
 
 //Retrive books
 app.get('/books', (req, res) => {
-    res.json(books);
+    let query = req.query;
+    let where = {};
+
+    if(query.hasOwnProperty('author') && query.author.length > 0) {
+        where.author = {
+            $like: '%' + query.author + '%'
+        };
+    }
+
+    db.book.findAll({where: where}).then((books) => {
+        res.json(books);
+    }, (err) => {
+        console.log('Book not found' + err.message);
+        res.status(500).send();
+    });
 });
 
 //Retrive books with :id
@@ -60,8 +74,8 @@ app.get('/books/:id', (req, res) => {
 //Update
 app.put('/books/:id', (req, res) => {
     let bookId = parseInt(req.params.id, 10);
-    let matched = _.findWhere(books, {id: bookId});
-    let valideAttributes = {};
+
+    let attributes = {};
     let body = _.pick(
         req.body,
         'name',
@@ -72,36 +86,48 @@ app.put('/books/:id', (req, res) => {
         'publishYear'
     );
 
-    if(!matched) {
-        return res.status(404).send;
-    }
 
-    if (body.hasOwnProperty('name') && _.isString(body.name) && body.name.trim().length > 0) {
-        valideAttributes.name = body.name;
-    } else if (body.hasOwnProperty('name')) {
-        return res.status(400).send();
+    if (body.hasOwnProperty('name')) {
+        attributes.name = body.name;
     }
     
-    _.extend(matched, valideAttributes);
-    res.json(matched);
+    db.book.findByPk(bookId).then((book) => {
+
+        if(book) {
+
+            book.update(attributes).then((book) => {
+                res.json(book.toJSON());
+            }, (err) => {
+                res.status(400).send(err);
+            });
+
+        } else {
+            res.status(404).send();
+        }
+    }, () => {
+        res.status(500).send();
+    });
 });
 
 //Delete book
 app.delete('/books/:id', (req, res) => {
     let bookId = parseInt(req.params.id, 10);
-    let matched = _.findWhere(books, {id: bookId});
-
-    if(!matched) {
-        res.status(404).json({ "error": "Book not found"});
-    } else {
-        books = _.without(books, matched);
-        res.json(matched);
-    }    
+    db.book.destroy({
+        where: {id: bookId}
+    }).then( (delBook) => {
+        if(delBook === 0) {
+            res.status(404).json({ err: 'Book not found' });
+        } else {
+            res.status(204).send();
+        }
+    }, () => {
+        res.status(500).send();
+    })  
 });
 
 
 //Getting Live
-db.sequelize.sync({force: true}).then(() => {
+db.sequelize.sync().then(() => {
     app.listen(PORT, (req, res) => {
         console.log(`Listening on port: ${PORT}!`);
     });
