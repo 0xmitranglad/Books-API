@@ -103,7 +103,7 @@ module.exports = (sequelize, DataTypes) => {
                 return reject();
             }
         
-            author.findOne({ 
+            author.findOne({
                 where: { email: body.email }
             }).then((author) => {
                 if(!author || !bcrypt.compareSync(body.password, author.get('passwordHash'))) {
@@ -114,6 +114,28 @@ module.exports = (sequelize, DataTypes) => {
             }, (err) => {
                 reject();
             });
+        });
+    }
+
+    author.findByToken = (token) => {
+        return new Promise((resolve, reject) => {
+            try {
+                let decodedJWT = jwt.verify(token, 'qwerty098');
+                let bytes = cryptojs.AES.decrypt(decodedJWT.token, 'abc1234');
+                let tokenData = JSON.parse(bytes.toString(cryptojs.enc.Utf8));
+
+                author.findByPk(tokenData.id).then((author) => {
+                    if(author) {
+                        resolve(author);
+                    } else {
+                        reject();
+                    }
+                }, (err) => {
+                    reject();
+                });
+            } catch (err) {
+                reject();
+            }
         });
     }
 

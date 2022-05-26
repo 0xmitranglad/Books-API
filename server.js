@@ -5,12 +5,13 @@ const bodyParser = require('body-parser');
 const _ = require('underscore');
 const db = require('./db.js');
 const bcrypt = require('bcrypt');
+const middleware = require('./middleware.js')(db);
 
 
 app.use(bodyParser.json());
 
 //Create books
-app.post('/books', (req, res) => {
+app.post('/books', middleware.requireAuth, (req, res) => {
 
     let body = _.pick(
         req.body,
@@ -31,7 +32,7 @@ app.post('/books', (req, res) => {
 });
 
 //Retrive books
-app.get('/books', (req, res) => {
+app.get('/books', middleware.requireAuth, (req, res) => {
     let query = req.query;
     let where = {};
 
@@ -50,7 +51,7 @@ app.get('/books', (req, res) => {
 });
 
 //Retrive books with :id
-app.get('/books/:id', (req, res) => {
+app.get('/books/:id', middleware.requireAuth, (req, res) => {
     let bookId = parseInt(req.params.id, 10);
 
     db.book.findByPk(bookId).then((book) => {
@@ -61,7 +62,7 @@ app.get('/books/:id', (req, res) => {
 });
 
 //Update
-app.put('/books/:id', (req, res) => {
+app.put('/books/:id', middleware.requireAuth, (req, res) => {
     let bookId = parseInt(req.params.id, 10);
 
     let attributes = {};
@@ -99,7 +100,7 @@ app.put('/books/:id', (req, res) => {
 });
 
 //Delete book
-app.delete('/books/:id', (req, res) => {
+app.delete('/books/:id', middleware.requireAuth, (req, res) => {
     let bookId = parseInt(req.params.id, 10);
     db.book.destroy({
         where: {id: bookId}
