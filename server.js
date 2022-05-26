@@ -130,15 +130,12 @@ app.post('/authors', (req, res) => {
 
     db.author.create(body)
         .then((author) => {
-            res.json(author.toJSON());
+            res.json(author.toAbstractJSON());
+
         }, (err) => {
-            res.status(400).send();
+            res.status(400).send(err.message);
         });
 });
-
-
-
-
 
 
 
