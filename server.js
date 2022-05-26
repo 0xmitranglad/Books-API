@@ -4,6 +4,7 @@ const PORT = 3000;
 const bodyParser = require('body-parser');
 const _ = require('underscore');
 const db = require('./db.js');
+const bcrypt = require('bcrypt');
 
 
 app.use(bodyParser.json());
@@ -116,7 +117,7 @@ app.delete('/books/:id', (req, res) => {
 
 
 //Authors 
-app.post('/authors', (req, res) => {
+app.post('/author', (req, res) => {
     let body = _.pick(
         req.body,
         'firstName',
@@ -137,6 +138,15 @@ app.post('/authors', (req, res) => {
         });
 });
 
+app.post('/author/login', (req, res) => {
+    let body = _.pick(req.body, 'email', 'password');
+
+    db.author.authenticate(body).then( (author) => {
+        res.json(author.toAbstractJSON());
+    }, (err) => {
+        res.status(401).send();
+    });
+});
 
 
 //Getting Live
@@ -145,4 +155,3 @@ db.sequelize.sync({force: true}).then(() => {
         console.log(`Listening on port: ${PORT}!`);
     });
 });
-

@@ -63,8 +63,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     //instance methods
-    author.prototype.toAbstractJSON = function () {
-        console.log('inside instance methos');
+    author.prototype.toAbstractJSON = () => {
                 let json = this.toJSON();
                 return _.pick(
                     json, 
@@ -76,6 +75,27 @@ module.exports = (sequelize, DataTypes) => {
                     'country'
                 );
     };
+
+    //classMethods
+    author.authenticate = (body) => {
+        return new Promise((resolve, reject) => {
+            if(typeof body.email !== 'string' && typeof body.password !== 'string') {
+                return reject();
+            }
+        
+            author.findOne({ 
+                where: { email: body.email }
+            }).then((author) => {
+                if(!author || !bcrypt.compareSync(body.password, author.get('passwordHash'))) {
+                    return reject();
+                }
+
+                resolve(author);
+            }, (err) => {
+                reject();
+            });
+        });
+    }
 
     return author;
 };
