@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt');
 
 app.use(bodyParser.json());
 
-//Create books 
+//Create books
 app.post('/books', (req, res) => {
 
     let body = _.pick(
@@ -142,7 +142,13 @@ app.post('/author/login', (req, res) => {
     let body = _.pick(req.body, 'email', 'password');
 
     db.author.authenticate(body).then( (author) => {
-        res.json(author.toAbstractJSON());
+        let token = author.generateToken('authentication');
+
+        if(token) {
+            res.header('Auth', token).json(author.toAbstractJSON());
+        } else {
+            res.status(401).send();
+        }
     }, (err) => {
         res.status(401).send();
     });

@@ -1,5 +1,7 @@
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
+const cryptojs = require('crypto-js');
+const jwt = require('jsonwebtoken');
 
 module.exports = (sequelize, DataTypes) => {
     var author = sequelize.define('author', {
@@ -63,7 +65,7 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     //instance methods
-    author.prototype.toAbstractJSON = () => {
+    author.prototype.toAbstractJSON = function() {
                 let json = this.toJSON();
                 return _.pick(
                     json, 
@@ -74,7 +76,25 @@ module.exports = (sequelize, DataTypes) => {
                     'city',
                     'country'
                 );
-    };
+    }
+
+    author.prototype.generateToken = function(type) {
+        if(!_.isString(type)) {
+            return undefined;
+        }
+
+        try {
+            let stringData = JSON.stringify({id: this.get('id'), type: type});
+            let encryptedData = cryptojs.AES.encrypt(stringData, 'abc1234').toString();
+            let token = jwt.sign({
+                token: encryptedData
+            }, 'qwerty098');
+
+            return token;
+        } catch (e) {
+            return undefined;
+        }
+    }
 
     //classMethods
     author.authenticate = (body) => {
